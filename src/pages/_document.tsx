@@ -1,15 +1,21 @@
 import { getCssText } from '@ignite-ui/react'
-import { Html, Head, Main, NextScript } from 'next/document'
+import Document, {
+  Html,
+  Head,
+  Main,
+  NextScript,
+  DocumentContext,
+} from 'next/document'
+import React, { ReactElement } from 'react'
 
-export default function Document() {
+interface MyDocumentProps {
+  styles: ReactElement
+}
+
+function MyDocument({ styles }: MyDocumentProps) {
   return (
     <Html lang="pt-br">
-      <Head>
-        <style
-          id="stitches"
-          dangerouslySetInnerHTML={{ __html: getCssText() }}
-        />
-      </Head>
+      <Head>{styles}</Head>
       <body>
         <Main />
         <NextScript />
@@ -17,3 +23,22 @@ export default function Document() {
     </Html>
   )
 }
+
+MyDocument.getInitialProps = async (ctx: DocumentContext) => {
+  const initialProps = await Document.getInitialProps(ctx)
+  const cssText = getCssText()
+
+  return {
+    ...initialProps,
+    styles: [
+      ...React.Children.toArray(initialProps.styles),
+      <style
+        key="stitches"
+        id="stitches"
+        dangerouslySetInnerHTML={{ __html: cssText }}
+      />,
+    ],
+  }
+}
+
+export default MyDocument
